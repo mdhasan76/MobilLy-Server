@@ -29,3 +29,20 @@ app.listen(port, () => {
 const uri = `mongodb+srv://${process.env.USER_SECRET_name}:${process.env.USER_SECRET_pass}@cluster0.di4ojvf.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+const run = async () => {
+    try {
+        const productsCollection = client.db('MobileLy').collection("products");
+        app.get('/products/:id', async (req, res) => {
+            const category = req.params.id;
+            const result = await productsCollection.find({ categoryId: category }).toArray();
+            res.send(result)
+        })
+
+
+    }
+    finally {
+
+    }
+}
+run().catch(err => console.log(err))
