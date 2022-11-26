@@ -45,6 +45,29 @@ const run = async () => {
         //Db collection
         const productsCollection = client.db('MobileLy').collection("products");
         const users = client.db('MobileLy').collection("users");
+        const bookingCollection = client.db('MobileLy').collection("booked");
+
+        //verify For admin 
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { email: decodedEmail };
+            const result = await users.findOne(filter);
+            if (result.title !== 'admin') {
+                return res.status(403).send({ message: "Sorry Bro You ar not Admin" })
+            }
+            next();
+        }
+
+        //const verify Seller
+        const verifyseller = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { email: decodedEmail };
+            const result = await users.findOne(filter);
+            if (result.title !== 'seller') {
+                return res.status(403).send({ message: "Sorry Bro you are not Seler" })
+            }
+            next();
+        }
 
         //jwt Token
         app.get('/jwt', async (req, res) => {
@@ -55,7 +78,7 @@ const run = async () => {
                 const token = jwt.sign({ userMail }, process.env.USER_JWT, { expiresIn: '24h' });
                 return res.send({ accessToken: token })
             }
-            res.status(403).send({ accessToken: "Abar log in koro. token ar meyad nai" })
+            res.status(403).send({ accessToken: "Abar login koro. token ar meyad nai" })
         })
 
 
@@ -65,6 +88,20 @@ const run = async () => {
             const result = await productsCollection.find({ categoryId: category }).toArray();
             res.send(result)
         })
+
+
+        //All selers 
+        app.get('/allsellers', async (req, res) => {
+            const result = await users.find({ title: 'seller' }).toArray();
+            res.send(result);
+        })
+
+        //all Buyers
+        app.get('/allbuyers', async (req, res) => {
+            const result = await users.find({ title: 'buyer' }).toArray();
+            res.send(result)
+        })
+
 
 
         //Add Post method
@@ -77,6 +114,12 @@ const run = async () => {
         app.post('/addproduct', async (req, res) => {
             const data = req.body;
             const result = await productsCollection.insertOne(data);
+            res.send(result)
+        })
+
+        app.post('/booking', async (req, res) => {
+            const data = req.body;
+            const result = await bookingCollection.insertOne(data);
             res.send(result)
         })
 
