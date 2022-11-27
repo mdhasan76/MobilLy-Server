@@ -166,6 +166,24 @@ const run = async () => {
             res.send(result)
         })
 
+
+        //All put & update method
+        app.put('/verifyseller/:email', async (req, res) => {
+            const sellerEmail = req.params.email;
+            console.log(sellerEmail)
+            const filter = { email: sellerEmail };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    isVerified: true,
+                }
+            }
+            const productSellerVfd = await productsCollection.updateMany(filter, updatedDoc, options);
+            const result = await users.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        })
+
+
         //All Delete method
         app.delete('/allbuyers/:id', async (req, res) => {
             const id = req.params.id;
