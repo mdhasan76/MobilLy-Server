@@ -48,6 +48,7 @@ const run = async () => {
         const productsCollection = client.db('MobileLy').collection("products");
         const users = client.db('MobileLy').collection("users");
         const bookingCollection = client.db('MobileLy').collection("booked");
+        const reportedItems = client.db('MobileLy').collection("reportitem");
         const paymentsCollection = client.db('MobileLy').collection("payments");
 
         //verify For admin 
@@ -99,6 +100,10 @@ const run = async () => {
             res.send(result);
         })
 
+        app.get('/reportitems', async (req, res) => {
+            const result = await reportedItems.find({}).toArray()
+            res.send(result)
+        })
 
         //All selers 
         app.get('/allsellers', async (req, res) => {
@@ -166,6 +171,12 @@ const run = async () => {
             res.send(result)
         })
 
+        app.post('/reportitem', async (req, res) => {
+            const data = req.body;
+            const result = await reportedItems.insertOne(data);
+            res.send(result)
+        })
+
 
         //All put & update method
         app.put('/verifyseller/:email', async (req, res) => {
@@ -195,6 +206,15 @@ const run = async () => {
             const id = req.params.id;
             const result = await users.deleteOne({ _id: ObjectId(id) })
             res.send(result)
+        })
+
+        app.delete('/deleteReportItem/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const reportQuery = { itemId: id };
+            const filter = await productsCollection.deleteOne(query);
+            const reportItem = await reportedItems.deleteOne(reportQuery);
+            res.send(filter)
         })
 
     }
