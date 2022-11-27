@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
+
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
@@ -46,6 +48,7 @@ const run = async () => {
         const productsCollection = client.db('MobileLy').collection("products");
         const users = client.db('MobileLy').collection("users");
         const bookingCollection = client.db('MobileLy').collection("booked");
+        const paymentsCollection = client.db('MobileLy').collection("payments");
 
         //verify For admin 
         const verifyAdmin = async (req, res, next) => {
@@ -113,6 +116,38 @@ const run = async () => {
 
 
         //Add Post method
+        // app.post('/create-payment-intent', async (req, res) => {
+        //     const booking = req.body;
+        //     const price = booking.price;
+        //     const amount = price * 100;
+
+        //     const paymentIntent = await stripe.paymentIntents.create({
+        //         currency: 'usd',
+        //         amount: amount,
+        //         "payment_method_types": [
+        //             "card"
+        //         ]
+        //     })
+        //     res.send({
+        //         clientSecret: paymentIntent.client_secret,
+        //     });
+        // })
+
+        // app.post('/paymentConfirm', async (req, res) => {
+        //     const payment = req.body;
+        //     const result = await paymentsCollection.insertOne(payment);
+        // const id = payment.productId;
+        // const filter = { _id: ObjectId(id) };
+        // const updatedDoc = {
+        //     $set: {
+        //         paid: true,
+        //         transitionId: payment.transitionId
+        //     }
+        // }
+        // const updatedResult = await bookingCollection.updateOne(filter, updatedDoc)
+        //     res.send(result)
+        // })
+
         app.post('/users', async (req, res) => {
             const data = req.body;
             const result = await users.insertOne(data);
