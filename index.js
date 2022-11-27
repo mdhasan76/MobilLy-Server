@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 
@@ -53,7 +53,7 @@ const run = async () => {
             const filter = { email: decodedEmail };
             const result = await users.findOne(filter);
             if (result.title !== 'admin') {
-                return res.status(403).send({ message: "Sorry Bro You ar not Admin" })
+                return res.status(403).send({ message: "Sorry Bro You are not Admin" })
             }
             next();
         }
@@ -92,6 +92,7 @@ const run = async () => {
 
         //All selers 
         app.get('/allsellers', async (req, res) => {
+            console.log(req.query)
             const result = await users.find({ title: 'seller' }).toArray();
             res.send(result);
         })
@@ -123,7 +124,18 @@ const run = async () => {
             res.send(result)
         })
 
-        //Add Put method
+        //All Delete method
+        app.delete('/allbuyers/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await users.deleteOne({ _id: ObjectId(id) })
+            res.send(result)
+        })
+
+        app.delete('/allsellers/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await users.deleteOne({ _id: ObjectId(id) })
+            res.send(result)
+        })
 
     }
     finally {
