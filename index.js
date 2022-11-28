@@ -1,11 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_key);
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -107,7 +107,6 @@ const run = async () => {
 
         //All selers 
         app.get('/allsellers', async (req, res) => {
-            console.log(req.query)
             const result = await users.find({ title: 'seller' }).toArray();
             res.send(result);
         })
@@ -118,39 +117,46 @@ const run = async () => {
             res.send(result)
         })
 
+        app.get('/booked/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await bookingCollection.findOne(query);
+            res.send(result);
+        })
 
 
         //Add Post method
-        // app.post('/create-payment-intent', async (req, res) => {
-        //     const booking = req.body;
-        //     const price = booking.price;
-        //     const amount = price * 100;
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body;
+            const price = booking.price;
+            const amount = price * 100;
 
-        //     const paymentIntent = await stripe.paymentIntents.create({
-        //         currency: 'usd',
-        //         amount: amount,
-        //         "payment_method_types": [
-        //             "card"
-        //         ]
-        //     })
-        //     res.send({
-        //         clientSecret: paymentIntent.client_secret,
-        //     });
-        // })
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            })
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        })
 
         // app.post('/paymentConfirm', async (req, res) => {
         //     const payment = req.body;
-        //     const result = await paymentsCollection.insertOne(payment);
-        // const id = payment.productId;
-        // const filter = { _id: ObjectId(id) };
-        // const updatedDoc = {
-        //     $set: {
-        //         paid: true,
-        //         transitionId: payment.transitionId
-        //     }
-        // }
-        // const updatedResult = await bookingCollection.updateOne(filter, updatedDoc)
-        //     res.send(result)
+        //     console.log(payment)
+        //     // const result = await paymentsCollection.insertOne(payment);
+        //     // const id = payment.productId;
+        //     // const filter = { _id: ObjectId(id) };
+        //     // const updatedDoc = {
+        //     //     $set: {
+        //     //         paid: true,
+        //     //         transitionId: payment.transitionId
+        //     //     }
+        //     // }
+        //     // const updatedResult = await bookingCollection.updateOne(filter, updatedDoc)
+        //     // res.send(result)
         // })
 
         app.post('/users', async (req, res) => {
@@ -181,7 +187,6 @@ const run = async () => {
         //All put & update method
         app.put('/verifyseller/:email', async (req, res) => {
             const sellerEmail = req.params.email;
-            console.log(sellerEmail)
             const filter = { email: sellerEmail };
             const options = { upsert: true };
             const updatedDoc = {
