@@ -154,6 +154,12 @@ const run = async () => {
             res.send(result);
         })
 
+        app.get('/advertizeitems', async (req, res) => {
+            const query = { advertize: true }
+            const data = await productsCollection.find(query).toArray();
+            res.send(data);
+        })
+
 
         //Add Post method
         app.post('/create-payment-intent', async (req, res) => {
