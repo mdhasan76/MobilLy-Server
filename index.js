@@ -103,7 +103,7 @@ const run = async () => {
             res.send(result)
         })
 
-        app.get('/myorders', verifyjwt, async (req, res) => {
+        app.get('/myorders', async (req, res) => {
             const userEmail = req.query.email;
             const decodedEmail = req.decoded.userMail;
             if (userEmail !== decodedEmail) {
