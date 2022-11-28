@@ -98,6 +98,11 @@ const run = async () => {
             res.send(result)
         })
 
+        app.get('/allproducts', async (req, res) => {
+            const result = await productsCollection.find({}).project({ categoryId: 1, paid: 1 }).toArray();
+            res.send(result)
+        })
+
         app.get('/myorders', verifyjwt, async (req, res) => {
             const userEmail = req.query.email;
             const decodedEmail = req.decoded.userMail;
