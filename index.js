@@ -255,7 +255,7 @@ const run = async () => {
 
 
         //All Delete method
-        app.delete('/allbuyers/:id', verifyjwt, verifyAdmin, async (req, res) => {
+        app.delete('/allbuyers/:id', async (req, res) => {
             const id = req.params.id;
             const result = await users.deleteOne({ _id: ObjectId(id) })
             res.send(result)
