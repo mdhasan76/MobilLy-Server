@@ -21,9 +21,14 @@ app.listen(port, () => {
     console.log('assainment 12 server is running')
 })
 
+
+
+const uri = `mongodb+srv://${process.env.USER_SECRET_name}:${process.env.USER_SECRET_pass}@cluster0.di4ojvf.mongodb.net/?retryWrites=true&w=majority`;
+
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 const verifyjwt = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    // console.log(authHeader)
     if (!authHeader) {
         return res.status(401).send("protomei error khaiso")
     }
@@ -38,9 +43,6 @@ const verifyjwt = (req, res, next) => {
     })
 }
 
-const uri = `mongodb+srv://${process.env.USER_SECRET_name}:${process.env.USER_SECRET_pass}@cluster0.di4ojvf.mongodb.net/?retryWrites=true&w=majority`;
-
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 const run = async () => {
     try {
@@ -57,6 +59,7 @@ const run = async () => {
             console.log(decodedEmail)
             const filter = { email: decodedEmail };
             const result = await users.findOne(filter);
+            console.log(result)
             if (result.title !== 'admin') {
                 return res.status(403).send({ message: "Sorry Bro You are not Admin" })
             }
@@ -94,8 +97,12 @@ const run = async () => {
             res.send(result)
         })
 
-        app.get('/myorders', async (req, res) => {
+        app.get('/myorders', verifyjwt, async (req, res) => {
             const userEmail = req.query.email;
+            const decodedEmail = req.decoded.userMail;
+            if (userEmail !== decodedEmail) {
+                return res.status(403).send({ message: "Batpari koira lab nai" })
+            }
             const query = { email: userEmail };
             const result = await bookingCollection.find(query).toArray();
             res.send(result);
@@ -106,14 +113,28 @@ const run = async () => {
             res.send(result)
         })
 
+        app.get('/users/admin/:email', async (req, res) => {
+            const id = req.params.email;
+            const query = { email: id };
+            const user = await users.findOne(query);
+            res.send({ isAdmin: user?.title === "admin" })
+        })
+        app.get('/users/seller/:email', async (req, res) => {
+            const uEmail = req.params.email;
+            const query = { email: uEmail };
+            const user = await users.findOne(query);
+            res.send({ isSeller: user?.title === "seller" })
+        })
+
+
         //All selers 
-        app.get('/allsellers', verifyjwt, async (req, res) => {
+        app.get('/allsellers', async (req, res) => {
             const result = await users.find({ title: 'seller' }).toArray();
             res.send(result);
         })
 
         //all Buyers
-        app.get('/allbuyers', verifyjwt, async (req, res) => {
+        app.get('/allbuyers', async (req, res) => {
             const result = await users.find({ title: 'buyer' }).toArray();
             res.send(result)
         })
@@ -208,7 +229,13 @@ const run = async () => {
             res.send(result)
         })
 
-        app.delete('/allsellers/:id', async (req, res) => {
+        app.delete('/allsellers/:id', verifyjwt, async (req, res) => {
+            const decodedEmail = req.decoded.userMail;
+            const query = { email: decodedEmail };
+            const user = await users.findOne(query);
+            if (user?.title !== 'admin') {
+                return res.status(403).send({ message: "Tomi Admin na vai" })
+            }
             const id = req.params.id;
             const result = await users.deleteOne({ _id: ObjectId(id) })
             res.send(result)
