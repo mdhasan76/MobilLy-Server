@@ -143,21 +143,21 @@ const run = async () => {
             });
         })
 
-        // app.post('/paymentConfirm', async (req, res) => {
-        //     const payment = req.body;
-        //     console.log(payment)
-        //     // const result = await paymentsCollection.insertOne(payment);
-        //     // const id = payment.productId;
-        //     // const filter = { _id: ObjectId(id) };
-        //     // const updatedDoc = {
-        //     //     $set: {
-        //     //         paid: true,
-        //     //         transitionId: payment.transitionId
-        //     //     }
-        //     // }
-        //     // const updatedResult = await bookingCollection.updateOne(filter, updatedDoc)
-        //     // res.send(result)
-        // })
+        app.post('/paymentConfirm', async (req, res) => {
+            const data = req.body;
+            const result = await paymentsCollection.insertOne(data);
+            const bookedUpdate = { _id: ObjectId(data.bookingId) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    paid: true
+                }
+            };
+            const updateBookedPaid = await bookingCollection.updateOne(bookedUpdate, updatedDoc, options);
+            const productUpdate = { _id: ObjectId(data.productId) };
+            const productResult = await productsCollection.updateOne(productUpdate, updatedDoc, options)
+            res.send(result)
+        })
 
         app.post('/users', async (req, res) => {
             const data = req.body;
