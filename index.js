@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const jwt = require('jsonwebtoken');
 const stripe = require("stripe")(process.env.STRIPE_SECRET_key);
 const port = process.env.PORT || 5000;
 
@@ -54,6 +54,7 @@ const run = async () => {
         //verify For admin 
         const verifyAdmin = async (req, res, next) => {
             const decodedEmail = req.decoded.email;
+            console.log(decodedEmail)
             const filter = { email: decodedEmail };
             const result = await users.findOne(filter);
             if (result.title !== 'admin') {
@@ -82,7 +83,7 @@ const run = async () => {
                 const token = jwt.sign({ userMail }, process.env.USER_JWT, { expiresIn: '24h' });
                 return res.send({ accessToken: token })
             }
-            res.status(403).send({ accessToken: "Abar login koro. token ar meyad nai" })
+            res.status(403).send({ accessToken: "" })
         })
 
 
@@ -106,13 +107,13 @@ const run = async () => {
         })
 
         //All selers 
-        app.get('/allsellers', async (req, res) => {
+        app.get('/allsellers', verifyjwt, async (req, res) => {
             const result = await users.find({ title: 'seller' }).toArray();
             res.send(result);
         })
 
         //all Buyers
-        app.get('/allbuyers', async (req, res) => {
+        app.get('/allbuyers', verifyjwt, async (req, res) => {
             const result = await users.find({ title: 'buyer' }).toArray();
             res.send(result)
         })
